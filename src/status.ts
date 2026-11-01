@@ -7,6 +7,7 @@ export type Status = {
   installed: string;
   lastBeat: Beat | null;
   nights: string[];
+  runsDir: string;
 };
 
 // Nights on disk = runs/<YYYY-MM-DD>.jsonl, newest first.
@@ -28,5 +29,6 @@ export function readStatus(config: RigConfig): Status {
     installed: config.installed,
     lastBeat: lastBeat(),
     nights: nightsOnDisk(config.runsDir),
+    runsDir: config.runsDir,
   };
 }

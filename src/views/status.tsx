@@ -1,6 +1,12 @@
 import type { Status } from '../status.js';
+import { readNight } from '../digest/reader.js';
 
-export function StatusBoard({ status }: { status: Status }) {
+export async function StatusBoard({ status }: { status: Status }) {
+  const nights = await Promise.all(status.nights.map(async (night) => ({
+    night,
+    counts: (await readNight(status.runsDir, night)).counts,
+  })));
+
   return (
     <>
       <h1>status</h1>
@@ -19,8 +25,12 @@ export function StatusBoard({ status }: { status: Status }) {
         <p class="mute">nothing in runs/</p>
       ) : (
         <ul>
-          {status.nights.map((n) => (
-            <li>{n}</li>
+          {nights.map(({ night, counts }) => (
+            <li>
+              <a href={`/digest/${night}`}>{night}</a>
+              {' · '}
+              ok {counts.ok} · retry {counts.retry} · fail {counts.fail}
+            </li>
           ))}
         </ul>
       )}

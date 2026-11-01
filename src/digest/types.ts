@@ -14,6 +14,7 @@ export type DigestRow = {
 export type DigestReadResult = {
   rows: DigestRow[];
   malformedLines: number;
+  counts: Record<DigestStatus, number>;
 };
 
 export declare function readNight(runsDir: string, night: string): Promise<DigestReadResult>;

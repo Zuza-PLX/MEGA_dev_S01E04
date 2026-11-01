@@ -35,6 +35,7 @@ export async function readNight(runsDir: string, night: string): Promise<DigestR
   const content = await readFile(join(runsDir, `${night}.jsonl`), 'utf8');
   const rows = new Map<string, DigestRow>();
   let malformedLines = 0;
+  const counts: Record<DigestStatus, number> = { ok: 0, retry: 0, fail: 0 };
 
   for (const line of content.split(/\r?\n/)) {
     if (line.trim() === '') continue;
@@ -52,6 +53,7 @@ export async function readNight(runsDir: string, night: string): Promise<DigestR
       continue;
     }
 
+    counts[value.status] += 1;
     const existing = rows.get(value.job);
     if (existing === undefined) {
       rows.set(value.job, {
@@ -78,5 +80,5 @@ export async function readNight(runsDir: string, night: string): Promise<DigestR
     });
   }
 
-  return { rows: [...rows.values()], malformedLines };
+  return { rows: [...rows.values()], malformedLines, counts };
 }

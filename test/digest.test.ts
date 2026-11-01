@@ -4,9 +4,14 @@ import { readNight } from '../src/digest/reader.js';
 
 describe('nightly run digest reader', () => {
   it('aggregates jobs and counts malformed lines in the 2026-10-28 fixture', async () => {
-    const { rows, malformedLines } = await readNight(resolve('runs'), '2026-10-28');
+    const { rows, malformedLines, counts } = await readNight(resolve('runs'), '2026-10-28');
 
     expect(malformedLines).toBe(1);
+    expect(counts).toEqual({
+      ok: 10,
+      retry: 4,
+      fail: 1,
+    });
     expect(rows).toHaveLength(5);
     expect(rows.map((row) => row.job)).toEqual([
       'rig/rotate-logs',
