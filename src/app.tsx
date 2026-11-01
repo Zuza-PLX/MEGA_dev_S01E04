@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { HTTPException } from 'hono/http-exception';
 import { loadConfig, type RigConfig } from './config.js';
 import { readNight } from './digest/reader.js';
 import type { DigestReadResult } from './digest/types.js';
@@ -12,6 +13,21 @@ export function createApp(config: RigConfig = loadConfig()) {
   const app = new Hono();
 
   app.get('/health', (c) => c.json({ ok: true, lane: lane().id }));
+
+  app.get('/api/digest/:night', async (c) => {
+    try {
+      const { rows } = await readNight(config.runsDir, c.req.param('night'));
+      return c.json(rows.toSorted((a, b) => a.job.localeCompare(b.job)));
+    } catch (error) {
+      if (error instanceof TypeError && error.message === 'night must be a valid YYYY-MM-DD date') {
+        throw new HTTPException(400, { message: error.message });
+      }
+      if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'ENOENT') {
+        throw new HTTPException(404, { message: 'Night not found' });
+      }
+      throw error;
+    }
+  });
 
   app.get('/', (c) =>
     c.html(
